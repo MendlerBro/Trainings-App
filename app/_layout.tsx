@@ -6,9 +6,10 @@ import * as SystemUI from 'expo-system-ui';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AppProvider, useApp } from '../src/store/AppContext';
+import { AuthProvider, useAuth } from '../src/store/AuthContext';
 import { colors } from '../src/theme';
 
-// Keep the native splash screen visible until stored app data has been restored.
+// Keep the native splash screen visible until auth state + stored app data have been restored.
 SplashScreen.preventAutoHideAsync().catch(() => {
   // no-op: splash screen module can reject if already hidden — safe to ignore
 });
@@ -17,15 +18,17 @@ SplashScreen.preventAutoHideAsync().catch(() => {
 SystemUI.setBackgroundColorAsync(colors.background).catch(() => {});
 
 function RootNavigator() {
+  const { isAuthLoading } = useAuth();
   const { isLoading } = useApp();
+  const stillLoading = isAuthLoading || isLoading;
 
   useEffect(() => {
-    if (!isLoading) {
+    if (!stillLoading) {
       SplashScreen.hideAsync().catch(() => {});
     }
-  }, [isLoading]);
+  }, [stillLoading]);
 
-  if (isLoading) {
+  if (stillLoading) {
     // Native splash screen is still visible at this point.
     return null;
   }
@@ -39,6 +42,7 @@ function RootNavigator() {
       }}
     >
       <Stack.Screen name="index" />
+      <Stack.Screen name="login" />
       <Stack.Screen name="onboarding" />
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="workout/[dayId]" options={{ animation: 'slide_from_bottom' }} />
@@ -50,10 +54,12 @@ function RootNavigator() {
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
-      <AppProvider>
-        <StatusBar style="light" />
-        <RootNavigator />
-      </AppProvider>
+      <AuthProvider>
+        <AppProvider>
+          <StatusBar style="light" />
+          <RootNavigator />
+        </AppProvider>
+      </AuthProvider>
     </SafeAreaProvider>
   );
 }

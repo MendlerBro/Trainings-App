@@ -30,7 +30,8 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files
+# local env files (contains real Firebase/Google secrets — never commit)
+.env
 .env*.local
 
 # typescript
@@ -39,3 +40,8 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# Firebase / Google service files (project-specific secrets)
+GoogleService-Info.plist
+google-services.json
+firebase-debug.log

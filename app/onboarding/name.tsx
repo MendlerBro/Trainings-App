@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { Button, OnboardingStep } from '../../src/components';
 import { useOnboarding } from '../../src/store/OnboardingContext';
+import { useAuth } from '../../src/store/AuthContext';
 import { Sex } from '../../src/types';
 import { colors, radius, spacing, typography } from '../../src/theme';
 
@@ -16,7 +17,8 @@ const SEX_OPTIONS: { value: Sex; label: string }[] = [
 export default function NameScreen() {
   const router = useRouter();
   const { draft, update } = useOnboarding();
-  const [name, setName] = useState(draft.name);
+  const { suggestedName } = useAuth();
+  const [name, setName] = useState(draft.name || suggestedName || '');
   const [age, setAge] = useState(draft.age ? String(draft.age) : '');
 
   const canContinue = name.trim().length > 0;

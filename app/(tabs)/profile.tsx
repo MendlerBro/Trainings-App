@@ -4,6 +4,7 @@ import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-nati
 
 import { Button, Card, ScreenContainer, SectionHeader } from '../../src/components';
 import { useApp } from '../../src/store/AppContext';
+import { useAuth } from '../../src/store/AuthContext';
 import { Equipment, ExperienceLevel, SessionDuration, TrainingGoal } from '../../src/types';
 import { colors, radius, spacing, typography } from '../../src/theme';
 
@@ -38,7 +39,8 @@ const DAY_COUNTS = [2, 3, 4, 5, 6];
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { profile, updateProfile, regeneratePlan, resetApp } = useApp();
+  const { profile, updateProfile, regeneratePlan, resetTrainingData } = useApp();
+  const { user, signOutUser } = useAuth();
   const [isRegenerating, setIsRegenerating] = useState(false);
 
   if (!profile) return null;
@@ -52,20 +54,34 @@ export default function ProfileScreen() {
 
   const handleReset = () => {
     Alert.alert(
-      'App zurücksetzen?',
-      'Dein Profil, Plan und dein Trainingsverlauf werden dauerhaft gelöscht.',
+      'Trainingsdaten zurücksetzen?',
+      'Dein Profil, Plan und dein Trainingsverlauf werden dauerhaft gelöscht. Du bleibst angemeldet und richtest die App neu ein.',
       [
         { text: 'Abbrechen', style: 'cancel' },
         {
           text: 'Zurücksetzen',
           style: 'destructive',
           onPress: async () => {
-            await resetApp();
+            await resetTrainingData();
             router.replace('/onboarding/welcome');
           },
         },
       ]
     );
+  };
+
+  const handleSignOut = () => {
+    Alert.alert('Abmelden?', 'Deine Daten bleiben in deinem Account gespeichert.', [
+      { text: 'Abbrechen', style: 'cancel' },
+      {
+        text: 'Abmelden',
+        style: 'destructive',
+        onPress: async () => {
+          await signOutUser();
+          router.replace('/login');
+        },
+      },
+    ]);
   };
 
   return (
@@ -76,6 +92,7 @@ export default function ProfileScreen() {
             <Text style={styles.avatarText}>{(profile.name || '?').charAt(0).toUpperCase()}</Text>
           </View>
           <Text style={styles.name}>{profile.name}</Text>
+          {user?.email ? <Text style={styles.email}>{user.email}</Text> : null}
           {isRegenerating ? <Text style={styles.regeneratingText}>Plan wird aktualisiert…</Text> : null}
         </View>
 
@@ -128,14 +145,21 @@ export default function ProfileScreen() {
           style={styles.regenerateButton}
         />
 
-        <SectionHeader title="Gefahrenzone" />
+        <SectionHeader title="Konto" />
         <Card style={styles.card}>
-          <Pressable onPress={handleReset}>
-            <Text style={styles.dangerText}>App zurücksetzen</Text>
+          <Pressable onPress={handleSignOut} style={styles.accountRow}>
+            <Text style={styles.accountRowText}>Abmelden</Text>
           </Pressable>
         </Card>
 
-        <Text style={styles.footerNote}>Trainero · Deine Daten bleiben lokal auf diesem Gerät.</Text>
+        <SectionHeader title="Gefahrenzone" />
+        <Card style={styles.card}>
+          <Pressable onPress={handleReset}>
+            <Text style={styles.dangerText}>Trainingsdaten zurücksetzen</Text>
+          </Pressable>
+        </Card>
+
+        <Text style={styles.footerNote}>Trainero · Deine Daten werden sicher mit deinem Account synchronisiert.</Text>
       </ScrollView>
     </ScreenContainer>
   );
@@ -193,6 +217,18 @@ const styles = StyleSheet.create({
   },
   name: {
     ...typography.title2,
+    color: colors.textPrimary,
+  },
+  email: {
+    ...typography.footnote,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  accountRow: {
+    paddingVertical: 2,
+  },
+  accountRowText: {
+    ...typography.headline,
     color: colors.textPrimary,
   },
   regeneratingText: {
