@@ -23,7 +23,7 @@ export default function DurationScreen() {
   return (
     <OnboardingStep
       stepIndex={5}
-      totalSteps={6}
+      totalSteps={7}
       title="Wie viel Zeit hast du?"
       subtitle="Pro Trainingseinheit – wir passen die Anzahl der Übungen daran an."
       footer={null}

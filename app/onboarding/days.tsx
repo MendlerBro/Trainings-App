@@ -18,7 +18,7 @@ export default function DaysScreen() {
   return (
     <OnboardingStep
       stepIndex={4}
-      totalSteps={6}
+      totalSteps={7}
       title="Wie oft pro Woche?"
       subtitle="Wähle, wie viele Trainingstage realistisch in deine Woche passen."
       footer={<Button label="Weiter" onPress={handleContinue} disabled={draft.daysPerWeek == null} />}

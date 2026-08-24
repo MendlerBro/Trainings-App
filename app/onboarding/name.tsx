@@ -31,7 +31,7 @@ export default function NameScreen() {
   return (
     <OnboardingStep
       stepIndex={0}
-      totalSteps={6}
+      totalSteps={7}
       title="Wie dürfen wir dich nennen?"
       subtitle="Damit sich dein Plan persönlich anfühlt."
       footer={<Button label="Weiter" onPress={handleContinue} disabled={!canContinue} />}

@@ -59,7 +59,7 @@ export default function SummaryScreen() {
   return (
     <OnboardingStep
       stepIndex={6}
-      totalSteps={6}
+      totalSteps={7}
       title={`Alles klar, ${draft.name || 'du'}!`}
       subtitle="Das ist die Basis für deinen persönlichen Trainingsplan."
       footer={

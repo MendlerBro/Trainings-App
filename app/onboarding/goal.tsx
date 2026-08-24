@@ -24,7 +24,7 @@ export default function GoalScreen() {
   return (
     <OnboardingStep
       stepIndex={1}
-      totalSteps={6}
+      totalSteps={7}
       title="Was ist dein Ziel?"
       subtitle="Das bestimmt Übungsauswahl, Sätze und Wiederholungen deines Plans."
       footer={null}

@@ -6,13 +6,28 @@ import { Platform } from 'react-native';
 
 import { auth, isFirebaseConfigured } from '../lib/firebase';
 
-GoogleSignin.configure({
-  webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-  offlineAccess: false,
-});
+/** Stable local-only "account" used while Firebase isn't configured yet, so the
+ * app is fully usable (offline, no cloud sync) without any backend setup. Once
+ * Firebase is configured, real sign-in takes over automatically. */
+const GUEST_UID = 'local-guest';
+
+if (isFirebaseConfigured) {
+  try {
+    GoogleSignin.configure({
+      webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+      offlineAccess: false,
+    });
+  } catch (error) {
+    console.warn('[auth] GoogleSignin.configure failed (native module unavailable?)', error);
+  }
+}
 
 interface AuthContextValue {
   user: User | null;
+  /** True while Firebase isn't configured — app runs fully offline under a local guest identity. */
+  isGuestMode: boolean;
+  /** `user?.uid` when signed in, the guest id in guest mode, otherwise null (needs to sign in). */
+  effectiveUid: string | null;
   isAuthLoading: boolean;
   isAppleSignInAvailable: boolean;
   signInWithApple: () => Promise<void>;
@@ -34,7 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [suggestedName, setSuggestedName] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isFirebaseConfigured) {
+    if (!isFirebaseConfigured || !auth) {
       setIsAuthLoading(false);
       return;
     }
@@ -46,12 +61,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (Platform.OS === 'ios') {
-      AppleAuthentication.isAvailableAsync().then(setIsAppleSignInAvailable);
+    if (Platform.OS === 'ios' && isFirebaseConfigured) {
+      AppleAuthentication.isAvailableAsync()
+        .then(setIsAppleSignInAvailable)
+        .catch(() => setIsAppleSignInAvailable(false));
     }
   }, []);
 
   const signInWithApple = async () => {
+    if (!auth) return;
     setAuthError(null);
     try {
       const credential = await AppleAuthentication.signInAsync({
@@ -77,6 +95,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signInWithGoogle = async () => {
+    if (!auth) return;
     setAuthError(null);
     try {
       await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
@@ -97,6 +116,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOutUser = async () => {
+    if (!auth) return;
     try {
       await GoogleSignin.signOut().catch(() => {});
       await signOut(auth);
@@ -105,9 +125,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const isGuestMode = !isFirebaseConfigured;
+  const effectiveUid = user?.uid ?? (isGuestMode ? GUEST_UID : null);
+
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
+      isGuestMode,
+      effectiveUid,
       isAuthLoading,
       isAppleSignInAvailable,
       signInWithApple,
@@ -116,7 +141,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       authError,
       suggestedName,
     }),
-    [user, isAuthLoading, isAppleSignInAvailable, authError, suggestedName]
+    [user, isGuestMode, effectiveUid, isAuthLoading, isAppleSignInAvailable, authError, suggestedName]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

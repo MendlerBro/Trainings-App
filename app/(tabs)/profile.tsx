@@ -40,7 +40,7 @@ const DAY_COUNTS = [2, 3, 4, 5, 6];
 export default function ProfileScreen() {
   const router = useRouter();
   const { profile, updateProfile, regeneratePlan, resetTrainingData } = useApp();
-  const { user, signOutUser } = useAuth();
+  const { user, isGuestMode, signOutUser } = useAuth();
   const [isRegenerating, setIsRegenerating] = useState(false);
 
   if (!profile) return null;
@@ -96,6 +96,16 @@ export default function ProfileScreen() {
           {isRegenerating ? <Text style={styles.regeneratingText}>Plan wird aktualisiert…</Text> : null}
         </View>
 
+        {isGuestMode ? (
+          <Card style={styles.card}>
+            <Text style={styles.guestNoteTitle}>Ohne Account unterwegs</Text>
+            <Text style={styles.guestNoteText}>
+              Login & Cloud-Sync sind noch nicht eingerichtet — deine Daten bleiben vorerst nur auf
+              diesem Gerät gespeichert.
+            </Text>
+          </Card>
+        ) : null}
+
         <SectionHeader title="Ziel" />
         <Card style={styles.card}>
           <ChipRow options={GOALS} value={profile.goal} onChange={(v) => applyChange({ goal: v })} />
@@ -145,12 +155,16 @@ export default function ProfileScreen() {
           style={styles.regenerateButton}
         />
 
-        <SectionHeader title="Konto" />
-        <Card style={styles.card}>
-          <Pressable onPress={handleSignOut} style={styles.accountRow}>
-            <Text style={styles.accountRowText}>Abmelden</Text>
-          </Pressable>
-        </Card>
+        {!isGuestMode ? (
+          <>
+            <SectionHeader title="Konto" />
+            <Card style={styles.card}>
+              <Pressable onPress={handleSignOut} style={styles.accountRow}>
+                <Text style={styles.accountRowText}>Abmelden</Text>
+              </Pressable>
+            </Card>
+          </>
+        ) : null}
 
         <SectionHeader title="Gefahrenzone" />
         <Card style={styles.card}>
@@ -230,6 +244,15 @@ const styles = StyleSheet.create({
   accountRowText: {
     ...typography.headline,
     color: colors.textPrimary,
+  },
+  guestNoteTitle: {
+    ...typography.headline,
+    color: colors.textPrimary,
+  },
+  guestNoteText: {
+    ...typography.footnote,
+    color: colors.textSecondary,
+    marginTop: 4,
   },
   regeneratingText: {
     ...typography.footnote,

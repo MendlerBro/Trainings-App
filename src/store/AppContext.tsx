@@ -22,8 +22,7 @@ interface AppContextValue {
 const AppContext = createContext<AppContextValue | undefined>(undefined);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
-  const uid = user?.uid ?? null;
+  const { effectiveUid: uid } = useAuth();
 
   const [isLoading, setIsLoading] = useState(true);
   const [profile, setProfile] = useState<UserProfile | null>(null);

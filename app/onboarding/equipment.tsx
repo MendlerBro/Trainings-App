@@ -22,7 +22,7 @@ export default function EquipmentScreen() {
   return (
     <OnboardingStep
       stepIndex={3}
-      totalSteps={6}
+      totalSteps={7}
       title="Wo trainierst du?"
       subtitle="Wir wählen nur Übungen, die mit deinem Equipment möglich sind."
       footer={null}

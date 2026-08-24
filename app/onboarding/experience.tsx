@@ -22,7 +22,7 @@ export default function ExperienceScreen() {
   return (
     <OnboardingStep
       stepIndex={2}
-      totalSteps={6}
+      totalSteps={7}
       title="Wie ist dein Trainingslevel?"
       subtitle="Damit Übungen und Umfang zu deiner Erfahrung passen."
       footer={null}

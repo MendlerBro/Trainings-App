@@ -11,7 +11,9 @@ export interface CloudData {
 }
 
 function userDocRef(uid: string) {
-  return doc(firestore, 'users', uid);
+  // Only called from functions that already checked `isFirebaseConfigured`, which
+  // guarantees `firestore` is initialized.
+  return doc(firestore!, 'users', uid);
 }
 
 function toCloudData(data: DocumentData | undefined): CloudData | null {
